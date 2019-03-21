@@ -1,0 +1,19 @@
+{
+  "name": "latihan-sequelize",
+  "version": "1.0.0",
+  "description": "latihan",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ivana",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "express-validator": "^5.3.1",
+    "multer": "^1.4.1",
+    "mysql2": "^1.6.5",
+    "sequelize": "^5.1.0"
+  }
+}
