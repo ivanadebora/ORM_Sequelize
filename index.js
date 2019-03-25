@@ -39,7 +39,7 @@ app.get('/book', (req, res) => {
     })
 });
 
-app.post('/postbook', [
+app.post('/book', [
     //File upload (karena pakai multer, tempatkan di posisi pertama agar membaca multipar form-data)
     // upload.single('image'),
 
@@ -88,6 +88,97 @@ app.post('/postbook', [
             "data": newBook
         })
     })
+})
+
+app.delete('/book/:isbn',[
+    //Set form validation rule
+    check('isbn')
+        .isLength({ min: 5 })
+        .isNumeric()
+        .custom(value => {
+            return book.findOne({where: {isbn: value}}).then(b => {
+                if(!b){
+                    throw new Error('ISBN not found');
+                }            
+            })
+        }
+    ),
+], (req, res) => {
+    book.destroy({where: {isbn: req.params.isbn}})
+        .then(affectedRow => {
+            if(affectedRow){
+                return {
+                    "status":"success",
+                    "message": "Book deleted",
+                    "data": null
+                } 
+            }
+
+            return {
+                "status":"error",
+                "message": "Failed",
+                "data": null
+            } 
+                
+        })
+        .then(r => {
+            res.json(r)
+        })
+})
+
+app.put('/book/', [
+    //File upload (karena pakai multer, tempatkan di posisi pertama agar membaca multipar form-data)
+    // upload.single('image'),
+
+    //Set form validation rule
+    check('image')
+    .isLength({min:2}),
+    check('isbn')
+        .isLength({ min: 5 })
+        .isNumeric()
+        .custom(value => {
+            return book.findOne({where: {isbn: value}}).then(b => {
+                if(!b){
+                    throw new Error('ISBN not found');
+                }            
+            })
+        }
+    ),
+    check('name')
+        .isLength({min: 2}),
+    check('year')
+        .isLength({min: 4, max: 4})
+        .isNumeric(),
+    check('author')
+        .isLength({min: 2}),
+    check('description')
+     .isLength({min: 10})
+
+],(req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ errors: errors.mapped() });
+    }
+    const update = {
+        name: req.body.name,
+        isbn: req.body.isbn,
+        year: req.body.year,
+        author: req.body.author,
+        description: req.body.description,
+        // image: req.file === undefined ? "" : req.file.filename
+        image: req.body.image
+    }
+    book.update(update,{where: {isbn: req.body.isbn}})
+        .then(affectedRow => {
+            return book.findOne({where: {isbn: req.body.isbn}})      
+        })
+        .then(b => {
+            res.json({
+                "status": "success",
+                "message": "Book updated",
+                "data": b
+            })
+        })
 })
 
 app.listen(port, () => console.log('Api aktif di port ' + port));
